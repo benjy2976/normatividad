@@ -2,8 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { FileDetail } from '../app/modules/documents/services/publicApi'
 import { alignPdfDimension, pdfRaster } from '../app/modules/viewer/utils/raster'
 import { layoutPdfPages, nearbyPdfPages, pdfPageAt } from '../app/modules/viewer/utils/pages'
-import { readTextArtifact, TEXT_PREVIEW_BYTES } from '../app/modules/viewer/services/textArtifact'
+import { readJsonPage, readTextArtifact, JSON_SCAN_BYTES, TEXT_PREVIEW_BYTES } from '../app/modules/viewer/services/textArtifact'
 import { fileDetail, files } from './fixtures'
+import { renderMarkdown } from '../app/modules/viewer/utils/markdown'
 import { clampPdfZoom, wheelPdfZoom } from '../app/modules/viewer/utils/zoom'
 import { readViewerQuery, representationKind, selectRepresentation, availableRepresentations } from '../app/modules/viewer/utils/selection'
 
@@ -158,5 +159,81 @@ describe('lectura acotada de artefactos', () => {
     await vi.advanceTimersByTimeAsync(15_000)
     await expired
     expect(vi.getTimerCount()).toBe(0)
+  })
+})
+
+
+describe('JSON OCR por página', () => {
+  it('lee la estructura real y conserva solo la página solicitada, sin metadatos raíz', async () => {
+    const page = { page: 2, text: 'Resolución\nSegunda línea', char_count: 30, empty: false }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ page_count: 3, metadata: { source_path: '/interno/no-publicar' }, pages: [{ page: 1, text: 'Otra página' }, page, { page: 3, text: 'Tercera' }] }))))
+    const result = await readJsonPage('/jsonl', 2, new AbortController().signal)
+    expect(result).toEqual({ text: JSON.stringify(page, null, 2), pages: 3 })
+    expect(result.text).not.toContain('source_path')
+    expect(result.text).not.toContain('Otra página')
+  })
+  it('interrumpe el stream al terminar la página sin esperar el resto del documento', async () => {
+    const cancel = vi.fn()
+    const stream = new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode('{"page_count":9999,"pages":[{"page":1,"text":"Primera"},')) }, cancel })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(stream)))
+    const result = await readJsonPage('/jsonl', 1, new AbortController().signal)
+    expect(JSON.parse(result.text!).text).toBe('Primera')
+    expect(result.pages).toBe(9999)
+    expect(cancel).toHaveBeenCalledOnce()
+  })
+  it('conserva UTF-8 entre chunks y reconoce páginas numeradas desde cero', async () => {
+    const bytes = new TextEncoder().encode(JSON.stringify({ page_count: 2, pages: [{ page: 0, text: 'Primera' }, { page: 1, text: 'Huánuco 🏛️' }] }))
+    let offset = 0
+    const stream = new ReadableStream({ pull(controller) { if (offset === bytes.length) controller.close(); else controller.enqueue(bytes.subarray(offset, ++offset)) } })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(stream)))
+    const result = await readJsonPage('/jsonl', 2, new AbortController().signal)
+    expect(JSON.parse(result.text!)).toEqual({ page: 1, text: 'Huánuco 🏛️' })
+  })
+  it('distingue una página ausente de un JSON corrupto y rechaza entradas inválidas', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response('{"page_count":1,"pages":[{"page":1}]}')).mockResolvedValueOnce(new Response('{"pages":[malformado]}')))
+    expect(await readJsonPage('/jsonl', 2, new AbortController().signal)).toEqual({ text: null, pages: 1 })
+    await expect(readJsonPage('/jsonl', 1, new AbortController().signal)).rejects.toThrow()
+    expect(() => readJsonPage('/jsonl', 0, new AbortController().signal)).toThrow('Página inválida')
+  })
+  it('limita una página grande sin presentar JSON cortado como válido', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ pages: [{ page: 1, text: 'x'.repeat(TEXT_PREVIEW_BYTES) }] }))))
+    await expect(readJsonPage('/jsonl', 1, new AbortController().signal)).rejects.toThrow('Esta página supera el límite')
+  })
+  it('limita el recorrido y cancela sin conservar páginas anteriores', async () => {
+    let bytes = 0
+    const cancel = vi.fn()
+    const chunk = new TextEncoder().encode(' '.repeat(65536))
+    const stream = new ReadableStream({ pull(controller) { bytes += chunk.length; controller.enqueue(chunk) }, cancel })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(stream)))
+    await expect(readJsonPage('/jsonl', 9999, new AbortController().signal)).rejects.toThrow('límite de lectura')
+    expect(bytes).toBeLessThanOrEqual(JSON_SCAN_BYTES + 2 * chunk.length)
+    expect(cancel).toHaveBeenCalledOnce()
+  })
+  it('no inicia una lectura ya cancelada', async () => {
+    const fetcher = vi.fn()
+    vi.stubGlobal('fetch', fetcher)
+    const controller = new AbortController()
+    controller.abort()
+    await expect(readJsonPage('/jsonl', 1, controller.signal)).rejects.toThrow()
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+})
+
+describe('Markdown legible y sanitizado', () => {
+  it('presenta títulos, énfasis, listas, tablas, saltos y bloques de código', () => {
+    const html = renderMarkdown('# Título\n\n**Texto**\nsegunda línea\n\n- Uno\n- Dos\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n```json\n{"page":1}\n```')
+    // Happy DOM and DOMPurify remove heading nodes; Chromium coverage checks semantic headings.
+    expect(html).toContain('Título')
+    const host = document.createElement('div')
+    host.innerHTML = html
+    for (const selector of ['strong', 'br', 'ul', 'table', 'pre > code']) expect(host.querySelector(selector)).not.toBeNull()
+  })
+  it('no ejecuta HTML, estilos, imágenes ni enlaces peligrosos', () => {
+    const html = renderMarkdown('<script>alert(1)</script>\n<img src="https://externo.test/pixel" onerror="alert(1)">\n\n[malicioso](javascript:alert%281%29)\n\n![imagen](https://externo.test/otro.png)')
+    const host = document.createElement('div')
+    host.innerHTML = html
+    expect(host.querySelector('script, img, iframe, style, svg, math, [onerror]')).toBeNull()
+    expect(host.querySelector('a[href^="javascript:"]')).toBeNull()
+    expect(host.textContent).toContain('<script>')
   })
 })

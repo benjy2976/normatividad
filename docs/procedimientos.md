@@ -255,6 +255,16 @@ páginas comprueban navegación y liberación de canvas lejanos; no certifican a
 integración real,
 los archivos grandes y los rangos HTTP conservan su validación productiva pendiente.
 
+`tests/artifacts.spec.ts` usa el formato OCR sintético `pages: [{ page, text }]` para comprobar
+una página JSON visible, navegación compartible, descarga con todas las páginas y copia válida.
+También comprueba Markdown renderizado/fuente, contenido activo bloqueado, ausencia de cargas
+remotas y copia manual cuando se deniega el portapapeles. El éxito automático requiere contexto
+seguro y permiso del navegador; en otros entornos debe aparecer la alternativa manual.
+Las pruebas unitarias del servicio verifican cancelación al encontrar la página, UTF-8, límites,
+páginas ausentes y JSON malformado. No prueban acceso aleatorio del servidor: la representación
+HTTP actual sigue siendo un archivo completo. No usar estos resultados como certificación de
+archivos institucionales grandes ni de todos los formatos históricos OCR.
+
 ### Muestras y verificación del artefacto
 
 Con `npm run dev`, abrir `/muestras/componentes` y `/muestras/administracion` en el puerto 8080.

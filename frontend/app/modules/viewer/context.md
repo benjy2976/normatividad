@@ -45,10 +45,33 @@ no concede permisos ni diferencia recursos ocultos de inexistentes. No hay escri
   consultan cuando se aproxima a la vista.
 - JPEG, PNG, WebP y GIF se muestran como imagen. Los otros formatos ofrecen descarga explícita;
   HTML, SVG y TIFF no se incrustan. No se ejecutan scripts del documento ni HTML de sus nombres.
-- Markdown y JSONL se presentan como texto plano escapado, nunca como HTML o scripts.
-  El servicio de lectura cancela al abandonar, limita la espera a 15 segundos y la vista previa
-  a 2 MiB. Un aviso remite a la descarga completa cuando hay truncamiento. Vacío y error tienen
-  estados explícitos; el error permite reintento. No se solicitan artefactos no seleccionados.
+- JSONL muestra una sola página OCR. El formato observado es un objeto documental con
+  `page_count`, `metadata` y `pages: [{ page, text, char_count, word_count, empty }]`; no se
+  interpreta cada línea como una página. El parser incremental selecciona `pages.*` y descarta
+  hermanos y metadatos raíz. El número visible comienza en 1; si la primera página declara
+  `page: 0`, se adapta la selección sin cambiar el JSON original mostrado o copiado.
+- La navegación JSON usa `pagina` en URL, anterior/siguiente y Enter. CodeMirror presenta solo
+  el objeto seleccionado, con sangría, colores, números de línea, plegado y selección; no permite
+  editar. Copiar devuelve ese JSON completo y formateado, sin las otras páginas ni metadatos raíz.
+  Página ausente, JSON ilegible y límites tienen estados explícitos; no se presenta JSON truncado
+  como válido. No se incluye un total inventado si falta el conteo del artefacto y del manifiesto.
+- La API sigue entregando un archivo completo: cada consulta JSON recorre el stream desde el
+  inicio y cancela al completar la página elegida. No conserva páginas anteriores ni descarga
+  representaciones no elegidas. Limita el recorrido a 32 MiB y el JSON formateado a 2 MiB por
+  página. Estos límites acotan lectura y presentación, no certifican memoria constante para un
+  token enorme o estructuras maliciosas. Llegar a páginas tardías puede agotar el presupuesto;
+  se ofrece descarga completa, sin inventar una paginación HTTP ni usar rangos no contratados.
+- Markdown inicia en vista renderizada con títulos, párrafos, saltos, énfasis, listas, tablas y
+  código. `markdown-it` deshabilita HTML e imágenes; DOMPurify aplica una lista permitida de
+  etiquetas y atributos antes de insertar HTML. No admite scripts, estilos, imágenes remotas,
+  iframes, SVG ni URLs ejecutables. Los enlaces seguros siguen siendo acciones explícitas.
+  «Código MD» muestra la fuente escapada; alternar no repite la petición. «Copiar MD» copia la
+  fuente, incluso desde la vista renderizada. La vista previa conserva 2 MiB; si se corta, un aviso
+  indica que la copia corresponde al fragmento y remite a descargar el archivo completo.
+- Las lecturas de texto tienen límite de 15 segundos y se cancelan al abandonar o cambiar página.
+  Vacío y error tienen estados explícitos; el error permite reintento. El portapapeles se usa solo
+  tras pulsar Copiar. Si falta permiso o contexto seguro, se ofrece un campo de solo lectura con
+  el texto seleccionado para copia manual; no se simula éxito ni se envía contenido a terceros.
 - La descarga utiliza `disposition=attachment` del contrato existente. PDF e imágenes admitidos
   también ofrecen apertura directa en otra pestaña con `noopener noreferrer`.
 - Las lecturas de metadatos conservan el límite de 15 segundos y cancelación del transporte
@@ -85,8 +108,11 @@ no concede permisos ni diferencia recursos ocultos de inexistentes. No hay escri
    `PdfPage.client.vue` posee el render cancelable y capa de texto por hoja. Reciben URL o PDF
    validados, sin conocer permisos, NFS ni catálogos. `utils/pages.ts` calcula geometría y rango;
    `utils/raster.ts` centraliza alineación, densidad y presupuesto del canvas.
-5. `TextArtifact.client.vue` usa `services/textArtifact.ts` para leer el artefacto seleccionado.
-6. `layouts/viewer.vue` aporta el marco sin footer y el slot de herramientas; diseño y densidad
+5. `TextArtifact.client.vue` coordina lectura acotada, fuente/renderizado y copia. El servicio
+   `textArtifact.ts` posee transporte y selección incremental; `utils/markdown.ts` concentra
+   parser y sanitización. `JsonCode.client.vue` adapta CodeMirror de solo lectura. `TextTools.vue`
+   presenta navegación, alternancia y copia en el slot existente de herramientas del coordinador.
+6. `layouts/viewer.vue` aporta el marco sin footer y slots de herramientas y acciones; diseño y densidad
    viven en [diseno.md](../../../../docs/diseno.md); organización en
    [frontend.md](../../../../docs/frontend.md).
 
@@ -95,8 +121,10 @@ no concede permisos ni diferencia recursos ocultos de inexistentes. No hay escri
 Pruebas unitarias cubren parámetros, pertenencia, confianza, selección y formatos incrustables.
 Las pruebas de navegador renderizan PDF sintéticos de dos y veinte páginas y cubren scroll
 continuo, render cercano, alineación, densidad de hojas visibles, barra única, zoom, historial,
-artefactos, descarga, errores, teclado
-y reflujo. Interceptan todas las lecturas públicas.
+artefactos, descarga, errores, teclado y reflujo. Las pruebas de texto cubren página JSON única,
+URL e historial, descarga completa, copia automática y manual, Markdown renderizado/fuente,
+sanitización y ausencia de cargas remotas. Las unitarias comprueban estructura OCR sintética,
+cancelación temprana, UTF-8, límites y contenido malicioso. Interceptan todas las lecturas públicas.
 
 No se acredita integración real PostgreSQL/NFS, lectores de pantalla, zoom nativo, documentos
 grandes ni rangos HTTP. La entrega optimizada mediante Nginx y su aceptación productiva siguen

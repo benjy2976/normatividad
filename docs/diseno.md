@@ -197,10 +197,26 @@ al área visible mantienen canvas y texto; las restantes conservan su lugar como
 Desplazar actualiza el indicador de página sin recargar el PDF. Navegar por número o historial
 lleva a la hoja correspondiente. La barra permanece fuera del scroll documental.
 
-El selector enumera únicamente versiones del manifiesto confiable. Markdown y JSONL ofrecen
-texto plano seleccionable y descarga, sin interpretar HTML, scripts ni formato enriquecido.
-Su vista previa tiene un límite explícito de 2 MiB; no se descargan anticipadamente todas las
-versiones. La elección inicial sigue siendo original o PDF con texto según el manifiesto.
+El selector enumera únicamente versiones del manifiesto confiable. La elección inicial sigue
+siendo original o PDF con texto; no se descargan anticipadamente todas las versiones.
+
+JSONL muestra una sola página OCR con sangría de dos espacios, números de línea, colores por
+propiedades, cadenas, números y literales, plegado de objetos y selección. CodeMirror funciona
+como lector, sin edición, y usa los tokens locales `--app-code-*`: azul, verde, violeta y ámbar,
+con variantes de contraste en ambos temas. Las líneas largas envuelven; el scroll pertenece al
+lector. Navegación, número de página y «Copiar JSON» comparten la barra existente. Copiar toma
+solo el objeto de la página; Descargar conserva el artefacto completo. No imprimir todas las
+páginas ni los metadatos raíz en la vista. Los límites de lectura y formatos viven en `viewer`.
+
+Markdown inicia renderizado, con ancho de lectura de 85 caracteres como máximo, títulos,
+listas, tablas, saltos y bloques de código. El contenido usa superficie y texto del tema;
+los bloques de código y citas usan superficie suave y las tablas tienen bordes visibles.
+«Renderizado» y «Código MD» son botones con estado pulsado accesible en la misma barra; la
+fuente conserva el texto escapado y seleccionable. «Copiar MD» toma la fuente en ambas vistas.
+No mostrar HTML crudo como contenido activo ni cargar imágenes o recursos remotos. Los límites
+de vista previa tienen aviso explícito; la copia de un Markdown truncado se identifica como tal.
+La copia exitosa se anuncia; si se deniega el portapapeles, un campo de solo lectura permite
+copiar manualmente. Conservar foco visible, reflujo móvil y los tamaños comunes del visor.
 
 El PDF conserva la hoja blanca en ambos temas, sin invertir su contenido. La superficie usa
 `--app-viewer-bg`: `#4b5563` en claro y `#202830` en oscuro, con contraste de al menos 7:1 frente

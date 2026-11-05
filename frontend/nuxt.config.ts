@@ -28,7 +28,7 @@ export default defineNuxtConfig({
   },
   icon : {
     provider     : 'none',
-    clientBundle : { scan: true, icons: ['lucide:sun', 'lucide:moon', 'lucide:loader-circle', 'lucide:download', 'lucide:external-link', 'lucide:file-text', 'lucide:plus', 'lucide:minus'] }
+    clientBundle : { scan: true, icons: ['lucide:sun', 'lucide:moon', 'lucide:loader-circle', 'lucide:download', 'lucide:external-link', 'lucide:file-text', 'lucide:plus', 'lucide:minus', 'lucide:copy'] }
   },
   css   : ['~/assets/main.css'],
   nitro : {

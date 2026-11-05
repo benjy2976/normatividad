@@ -221,7 +221,7 @@ Una URL compartible del visor puede tomar esta forma:
 - `/documentos/{documento}`: ficha pública de metadatos y archivos por ID.
 - `/documentos/{documento}/archivos/{archivo}`: visor público de un archivo exacto; `pagina` y
   `representacion` son compartibles. PDF continuo, imágenes admitidas, texto de artefactos
-  Markdown/JSONL y descarga de los otros formatos.
+  Markdown renderizado/fuente, JSONL por página y descarga de los otros formatos.
 
 El buscador presenta accesos a tipos frecuentes y un formulario compacto de tipo, año y
 búsqueda. Conserva orden y resultados por página. Cada norma puede mostrar varios iconos de
@@ -278,7 +278,12 @@ la carga y el scroll continuo, calcula el rango cercano y delega canvas/texto en
 Los tamaños aún no consultados usan el de la primera hoja hasta conocer su geometría real.
 La URL de página cambia con `replace` al desplazar y con `push` al navegar explícitamente.
 `TextArtifact.client` consulta únicamente el artefacto seleccionado mediante el servicio de
-lectura acotada de `viewer`; no interpreta Markdown ni JSONL como HTML.
+lectura acotada de `viewer`. `TextTools` aporta controles al slot de herramientas sin consultar
+recursos. El JSONL usa `@streamparser/json` para seleccionar una página y `JsonCode.client` adapta
+CodeMirror de solo lectura. Markdown se procesa en cliente con `markdown-it` y se sanitiza con
+DOMPurify antes de mostrarlo; la fuente se interpola como texto. Estas dependencias son locales
+al flujo y no sustituyen Nuxt UI, los tokens comunes ni el contrato HTTP. No se incluyen CDN.
+Los límites, cancelación, estructura OCR y copia viven en el contexto de `viewer`.
 El coordinador conserva la misma estructura de carga durante la hidratación inicial, aunque
 los metadatos lleguen antes de resolver el layout asíncrono. Los iconos esenciales del visor se
 incluyen explícitamente en el bundle local para conservar su disponibilidad también en desarrollo.

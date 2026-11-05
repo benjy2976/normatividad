@@ -69,8 +69,11 @@ La ficha reutiliza el componente documental de adjuntos en presentación ampliad
 con los mismos manifiestos y enlaces por ID. PDF.js presenta lectura continua en cliente,
 con placeholders para todas las hojas y render de las próximas al área visible. Cada página
 posee su canvas y capa de texto cancelables; workers y recursos se sirven localmente. Markdown
-y JSONL declarados admiten una vista de texto acotada al seleccionarlos, sin interpretar HTML
-ni sustituir automáticamente la representación predeterminada.
+y JSONL declarados se cargan al seleccionarlos: JSONL presenta una página extraída incrementalmente
+con CodeMirror; Markdown alterna fuente escapada y contenido renderizado por `markdown-it` y
+sanitizado con DOMPurify. Las lecturas tienen límites y cancelación; las acciones copian el
+contenido visible o descargan el artefacto completo mediante el contrato existente. No sustituyen
+la representación predeterminada ni crean paginación en la API.
 La administración futura vivirá bajo `/administracion`, sin estar expuesta por el proxy público.
 
 `app.vue` configura Nuxt UI y compone el layout público con la página activa. El buscador y la

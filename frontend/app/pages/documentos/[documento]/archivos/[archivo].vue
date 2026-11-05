@@ -4,6 +4,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { usePublicApi } from '~/modules/documents/composables/usePublicDocuments'
 import { documentTitle } from '~/modules/documents/utils/search'
 import PdfTools from '~/modules/viewer/components/PdfTools.vue'
+import TextTools from '~/modules/viewer/components/TextTools.vue'
 import { availableRepresentations, readViewerQuery, representationKind, representationLabel, selectRepresentation } from '~/modules/viewer/utils/selection'
 
 definePageMeta({
@@ -37,7 +38,14 @@ const pageCount = ref(0)
 const imageError = ref(false)
 const zoom = ref('0.75')
 const scale = ref(0.75)
-watch(() => [src.value, status.value], () => { pageCount.value = 0; imageError.value = false; zoom.value = '0.75'; scale.value = 0.75 })
+const textReader = ref<{ copy: () => Promise<void> } | null>(null)
+const textSource = ref(false)
+const textState = ref<{ ready: boolean, pages: number | null, copied: boolean }>({ ready: false, pages: null, copied: false })
+const textType = computed(() => selected.value?.tipo === 'jsonl' ? 'jsonl' as const : 'markdown' as const)
+watch(() => [src.value, status.value], () => {
+  pageCount.value = 0; imageError.value = false; zoom.value = '0.75'; scale.value = 0.75
+  textSource.value = false; textState.value = { ready: false, pages: null, copied: false }
+})
 const unavailable = computed(() => error.value?.statusCode === 404)
 function changePage(page: number, replace = false) {
   if (!Number.isSafeInteger(page) || page < 1 || (pageCount.value > 0 && page > pageCount.value)) {
@@ -71,6 +79,16 @@ useHead({ title: () => data.value ? `${data.value.file.nombre} | Visor de Normat
           :pages="pageCount"
           :scale="scale"
           @page-change="changePage" />
+        <TextTools
+          v-if="kind === 'text' && selected && !query.errors.length"
+          v-model:source="textSource"
+          :type="textType"
+          :page="query.page"
+          :pages="textState.pages ?? data.file.cantidadPaginas ?? null"
+          :ready="textState.ready"
+          :copied="textState.copied"
+          @page-change="changePage"
+          @copy="textReader?.copy()" />
       </template>
     </template>
     <template #actions>
@@ -85,7 +103,7 @@ useHead({ title: () => data.value ? `${data.value.file.nombre} | Visor de Normat
           </option>
         </select>
         <template v-if="selected">
-          <a :href="`${src}?disposition=attachment`" class="viewer-tool-button" :aria-label="`Descargar ${data.file.nombre}`" title="Descargar versión seleccionada"><UIcon name="i-lucide-download" aria-hidden="true" /></a>
+          <a :href="`${src}?disposition=attachment`" class="viewer-tool-button" :aria-label="`Descargar ${data.file.nombre} · versión completa`" title="Descargar versión completa (todas las páginas)"><UIcon name="i-lucide-download" aria-hidden="true" /></a>
           <a
             v-if="kind !== 'download'"
             :href="src"
@@ -153,7 +171,16 @@ useHead({ title: () => data.value ? `${data.value.file.nombre} | Visor de Normat
         </ClientOnly>
       </template>
       <ClientOnly v-else-if="kind === 'text'">
-        <TextArtifact :key="src" :src="src" :label="representationLabel(selected.tipo)" />
+        <TextArtifact
+          :key="src"
+          ref="textReader"
+          :src="src"
+          :label="representationLabel(selected.tipo)"
+          :type="textType"
+          :page="query.page"
+          :source="textSource"
+          @state="textState = $event"
+          @page-change="changePage" />
         <template #fallback>
           <div class="viewer-state" role="status">
             Preparando texto…

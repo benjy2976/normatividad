@@ -19,6 +19,10 @@
   --app-viewer-text: #f8fafc;
   --app-viewer-page-border: #202a35;
   --app-viewer-focus: #fbbf24;
+  --app-code-property: #1d4ed8;
+  --app-code-string: #08736b;
+  --app-code-number: #7e22ce;
+  --app-code-literal: #9a3412;
   --app-surface: #ffffff;
   --app-soft: #edf5f3;
   --app-table-head-bg: #125a55;
@@ -51,6 +55,10 @@
   --app-bg: #111b22;
   --app-viewer-bg: #202830;
   --app-viewer-page-border: #71808c;
+  --app-code-property: #93c5fd;
+  --app-code-string: #64d8c6;
+  --app-code-number: #d8b4fe;
+  --app-code-literal: #fdba74;
   --app-surface: #192830;
   --app-soft: #203b40;
   --app-table-head-bg: #264d50;
@@ -285,6 +293,9 @@ dd { margin: 2px 0 0; overflow-wrap: anywhere; }
 .viewer-toolbar .viewer-tool-button:not(:disabled):hover { background: var(--app-soft); }
 .viewer-toolbar .viewer-tool-button:disabled { opacity: 0.45; }
 .viewer-toolbar .viewer-document-link { width: auto; gap: 6px; padding-inline: 10px; font-weight: 650; }
+.viewer-toolbar .viewer-text-button { width: auto; gap: 6px; padding-inline: 10px; white-space: nowrap; }
+.viewer-toolbar .viewer-text-button[aria-pressed="true"] { background: var(--app-primary); color: var(--app-on-primary); }
+.artifact-mode { display: flex; align-items: center; gap: 4px; }
 .viewer-heading { flex: 1 1 160px; min-width: 140px; }
 .viewer-heading h1 { font-size: 14px; margin: 0; overflow-wrap: anywhere; }
 .viewer-heading p { font-size: 12px; margin: 2px 0 0; color: var(--app-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -306,8 +317,31 @@ dd { margin: 2px 0 0; overflow-wrap: anywhere; }
 .pdf-page-placeholder { display: block; padding: 16px; font-size: 14px; color: #536872; }
 .pdf-page { position: relative; flex-shrink: 0; margin-inline: 0; margin-left: max(0px, round(down, calc((100% - var(--app-pdf-page-width)) / 2), var(--app-pdf-pixel-step))); background: white; color: black; outline: 1px solid var(--app-viewer-page-border); box-shadow: 0 3px 12px rgb(0 0 0 / 35%); }
 .pdf-page canvas { display: block; }
-.artifact-viewport { flex: 1; min-height: 0; overflow: auto; padding: 12px 16px; background: var(--app-surface); }
+.artifact-viewport { flex: 1; min-height: 0; min-width: 0; overflow: auto; padding: 12px 16px; background: var(--app-surface); }
+.artifact-code-viewport { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+.artifact-json { flex: 1; min-height: 0; min-width: 0; }
 .artifact-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; margin: 0; }
+.artifact-source { max-width: 100%; padding: 12px; background: var(--app-soft); border: 1px solid var(--app-border-control); border-radius: 6px; line-height: 1.6; }
+.artifact-copy-fallback { flex-shrink: 0; padding: 8px; border-bottom: 1px solid var(--app-border); }
+.artifact-copy-fallback textarea { display: block; width: 100%; margin-top: 4px; background: var(--app-surface); color: var(--app-text); border: 1px solid var(--app-border-control); font: 13px ui-monospace, monospace; }
+.markdown-document { max-width: 85ch; margin-inline: auto; overflow-wrap: anywhere; line-height: 1.65; }
+.markdown-document > :first-child { margin-top: 0; }
+.markdown-document h1, .markdown-document h2, .markdown-document h3, .markdown-document h4, .markdown-document h5, .markdown-document h6 { font-weight: 700; margin: 16px 0 8px; line-height: 1.3; }
+.markdown-document h1 { font-size: 26px; }
+.markdown-document h2 { font-size: 22px; border-bottom: 1px solid var(--app-border); padding-bottom: 4px; }
+.markdown-document h3 { font-size: 18px; }
+.markdown-document p, .markdown-document ul, .markdown-document ol, .markdown-document blockquote, .markdown-document pre, .markdown-document table { margin-block: 8px 12px; }
+.markdown-document ul { list-style: disc; padding-left: 24px; }
+.markdown-document ol { list-style: decimal; padding-left: 24px; }
+.markdown-document li + li { margin-top: 4px; }
+.markdown-document blockquote { padding: 4px 12px; border-left: 3px solid var(--app-primary); background: var(--app-soft); }
+.markdown-document pre { padding: 12px; overflow-x: auto; border: 1px solid var(--app-border); border-radius: 6px; background: var(--app-soft); }
+.markdown-document code { font: 13px ui-monospace, monospace; background: var(--app-soft); }
+.markdown-document a { color: var(--app-primary); text-decoration: underline; }
+.markdown-document table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.markdown-document th, .markdown-document td { padding: 6px 10px; border: 1px solid var(--app-border-control); }
+.markdown-document th { background: var(--app-soft); font-weight: 700; }
+.markdown-document hr { border: 0; border-top: 1px solid var(--app-border-control); margin-block: 16px; }
 .artifact-notice { padding: 8px; border: 1px solid var(--app-border-control); background: var(--app-soft); margin-bottom: 12px; }
 .image-viewport { flex: 1; min-height: 0; overflow: auto; padding: 16px; text-align: center; }
 .image-viewport img { max-width: 100%; height: auto; margin-inline: auto; }
