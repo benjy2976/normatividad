@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "name": "catalogs",
+  "responsibility": "Publicación de tipos de documento, siglas y procesos",
+  "context": "context.md"
+}

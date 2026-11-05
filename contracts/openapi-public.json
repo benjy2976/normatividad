@@ -1,0 +1,605 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Normatividad - API pública",
+    "version": "0.1.0",
+    "description": "Catálogos y documentos públicos del Gobierno Regional de Huánuco."
+  },
+  "servers": [
+    {
+      "url": "/resources"
+    }
+  ],
+  "tags": [
+    { "name": "Plataforma" },
+    { "name": "Catálogos" },
+    { "name": "Documentos" }
+  ],
+  "paths": {
+    "/up": {
+      "get": {
+        "tags": ["Plataforma"],
+        "operationId": "healthCheck",
+        "summary": "Comprueba que Laravel está disponible",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Aplicación disponible",
+            "content": {
+              "text/html": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/tipos-documento": {
+      "get": {
+        "tags": ["Catálogos"],
+        "operationId": "listDocumentTypes",
+        "summary": "Lista los tipos de documento visibles en el portal",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/TextoCatalogo" },
+          { "$ref": "#/components/parameters/Pagina" },
+          { "$ref": "#/components/parameters/PorPagina" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Colección paginada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/DocumentType" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/v1/public/tipos-documento/{documentType}": {
+      "get": {
+        "tags": ["Catálogos"],
+        "operationId": "getDocumentType",
+        "summary": "Obtiene un tipo de documento visible",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/DocumentTypeId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tipo de documento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": { "data": { "$ref": "#/components/schemas/DocumentType" } }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/public/siglas": {
+      "get": {
+        "tags": ["Catálogos"],
+        "operationId": "listAcronyms",
+        "summary": "Lista las siglas visibles",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/TextoCatalogo" },
+          { "name": "tipoDocumentoId", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+          { "name": "procesoId", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+          { "$ref": "#/components/parameters/Pagina" },
+          { "$ref": "#/components/parameters/PorPagina" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Colección paginada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Acronym" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/v1/public/siglas/{acronym}": {
+      "get": {
+        "tags": ["Catálogos"],
+        "operationId": "getAcronym",
+        "summary": "Obtiene una sigla visible",
+        "security": [],
+        "parameters": [
+          { "name": "acronym", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sigla",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": { "data": { "$ref": "#/components/schemas/Acronym" } }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/public/procesos": {
+      "get": {
+        "tags": ["Catálogos"],
+        "operationId": "listProcesses",
+        "summary": "Lista los procesos activos",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/TextoCatalogo" },
+          { "$ref": "#/components/parameters/Pagina" },
+          { "$ref": "#/components/parameters/PorPagina" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Colección paginada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Process" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/v1/public/procesos/{process}": {
+      "get": {
+        "tags": ["Catálogos"],
+        "operationId": "getProcess",
+        "summary": "Obtiene un proceso activo",
+        "security": [],
+        "parameters": [
+          { "name": "process", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Proceso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": { "data": { "$ref": "#/components/schemas/Process" } }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/public/documentos": {
+      "get": {
+        "tags": ["Documentos"],
+        "operationId": "listDocuments",
+        "summary": "Lista y filtra documentos publicados",
+        "security": [],
+        "parameters": [
+          { "name": "texto", "in": "query", "schema": { "type": "string", "maxLength": 250 } },
+          { "name": "tipoDocumentoId", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+          { "name": "siglaId", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+          { "name": "procesoId", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+          { "name": "anio", "in": "query", "schema": { "type": "string", "pattern": "^[0-9]{4}$" } },
+          { "name": "numero", "in": "query", "schema": { "type": "integer", "minimum": 0 } },
+          { "name": "desde", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "hasta", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "orden", "in": "query", "schema": { "type": "string", "enum": ["fechaDesc", "fechaAsc", "idDesc"] } },
+          { "$ref": "#/components/parameters/Pagina" },
+          { "$ref": "#/components/parameters/PorPagina" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Colección paginada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Document" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/v1/public/documentos/{document}": {
+      "get": {
+        "tags": ["Documentos"],
+        "operationId": "getDocument",
+        "summary": "Obtiene un documento publicado",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/DocumentId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": { "data": { "$ref": "#/components/schemas/Document" } }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/public/documentos/{document}/archivos": {
+      "get": {
+        "tags": ["Documentos"],
+        "operationId": "listDocumentFiles",
+        "summary": "Lista los archivos de un documento publicado",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/DocumentId" },
+          { "$ref": "#/components/parameters/Pagina" },
+          { "$ref": "#/components/parameters/PorPagina" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Colección paginada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/DocumentFile" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/v1/public/documentos/{document}/archivos/{file}": {
+      "get": {
+        "tags": ["Documentos"],
+        "operationId": "getDocumentFile",
+        "summary": "Obtiene un archivo y su manifiesto de representaciones",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/DocumentId" },
+          { "$ref": "#/components/parameters/FileId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": { "data": { "$ref": "#/components/schemas/DocumentFileDetail" } }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/public/documentos/{document}/archivos/{file}/representaciones/{representation}": {
+      "get": {
+        "tags": ["Documentos"],
+        "operationId": "getDocumentRepresentation",
+        "summary": "Entrega una representación confiable",
+        "security": [],
+        "parameters": [
+          { "$ref": "#/components/parameters/DocumentId" },
+          { "$ref": "#/components/parameters/FileId" },
+          {
+            "name": "representation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["original", "pdf-searchable", "jsonl", "markdown"]
+            }
+          },
+          {
+            "name": "disposition",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["inline", "attachment"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contenido de la representación",
+            "headers": {
+              "Content-Disposition": { "schema": { "type": "string" } },
+              "X-Content-Type-Options": { "schema": { "type": "string", "const": "nosniff" } }
+            },
+            "content": {
+              "application/pdf": { "schema": { "type": "string", "contentEncoding": "binary" } },
+              "application/x-ndjson": { "schema": { "type": "string" } },
+              "text/markdown": { "schema": { "type": "string" } }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "TextoCatalogo": {
+        "name": "texto",
+        "in": "query",
+        "schema": { "type": "string", "maxLength": 150 }
+      },
+      "Pagina": {
+        "name": "pagina",
+        "in": "query",
+        "schema": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "PorPagina": {
+        "name": "porPagina",
+        "in": "query",
+        "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+      },
+      "DocumentTypeId": {
+        "name": "documentType",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer", "minimum": 1 }
+      },
+      "DocumentId": {
+        "name": "document",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer", "minimum": 1 }
+      },
+      "FileId": {
+        "name": "file",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "responses": {
+      "NotFound": {
+        "description": "Recurso inexistente, no publicado o no autorizado"
+      },
+      "ValidationError": {
+        "description": "Parámetros inválidos",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ValidationError" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "PaginationMeta": {
+        "type": "object",
+        "required": ["paginaActual", "desde", "hasta", "ultimaPagina", "porPagina", "total"],
+        "properties": {
+          "paginaActual": { "type": "integer" },
+          "desde": { "type": ["integer", "null"] },
+          "hasta": { "type": ["integer", "null"] },
+          "ultimaPagina": { "type": "integer" },
+          "porPagina": { "type": "integer" },
+          "total": { "type": "integer" }
+        }
+      },
+      "PaginationLinks": {
+        "type": "object",
+        "required": ["primera", "ultima", "anterior", "siguiente"],
+        "properties": {
+          "primera": { "type": "string" },
+          "ultima": { "type": "string" },
+          "anterior": { "type": ["string", "null"] },
+          "siguiente": { "type": ["string", "null"] }
+        }
+      },
+      "PaginatedResponse": {
+        "type": "object",
+        "required": ["data", "meta", "links"],
+        "properties": {
+          "data": { "type": "array", "items": {} },
+          "meta": { "$ref": "#/components/schemas/PaginationMeta" },
+          "links": { "$ref": "#/components/schemas/PaginationLinks" }
+        }
+      },
+      "DocumentType": {
+        "type": "object",
+        "required": ["id", "descripcion", "usaNumeracionPorProceso", "permiteVersiones", "permiteAdendas"],
+        "properties": {
+          "id": { "type": "integer" },
+          "descripcion": { "type": ["string", "null"] },
+          "usaNumeracionPorProceso": { "type": "boolean" },
+          "permiteVersiones": { "type": "boolean" },
+          "permiteAdendas": { "type": "boolean" }
+        }
+      },
+      "Acronym": {
+        "type": "object",
+        "required": ["id", "tipoDocumentoId", "procesoId", "codigo", "nombre", "sigla", "manual"],
+        "properties": {
+          "id": { "type": "integer" },
+          "tipoDocumentoId": { "type": ["integer", "null"] },
+          "procesoId": { "type": ["integer", "null"] },
+          "codigo": { "type": "string" },
+          "nombre": { "type": ["string", "null"] },
+          "sigla": { "type": ["string", "null"] },
+          "manual": { "type": "boolean" }
+        }
+      },
+      "Process": {
+        "type": "object",
+        "required": ["id", "codigo", "descripcion"],
+        "properties": {
+          "id": { "type": "integer" },
+          "codigo": { "type": "string" },
+          "descripcion": { "type": "string" }
+        }
+      },
+      "Document": {
+        "type": "object",
+        "required": ["id", "titulo", "descripcion", "observacion", "fecha", "anio", "numero", "correlativo", "version", "tipoDocumento", "sigla", "proceso"],
+        "properties": {
+          "id": { "type": "integer" },
+          "titulo": { "type": ["string", "null"] },
+          "descripcion": { "type": ["string", "null"] },
+          "observacion": { "type": ["string", "null"] },
+          "fecha": { "type": ["string", "null"], "format": "date" },
+          "anio": { "type": ["string", "null"] },
+          "numero": { "type": "integer" },
+          "correlativo": { "type": ["integer", "null"] },
+          "version": { "type": ["string", "null"] },
+          "tipoDocumento": { "$ref": "#/components/schemas/DocumentType" },
+          "sigla": { "oneOf": [{ "$ref": "#/components/schemas/Acronym" }, { "type": "null" }] },
+          "proceso": { "oneOf": [{ "$ref": "#/components/schemas/Process" }, { "type": "null" }] }
+        }
+      },
+      "DocumentFile": {
+        "type": "object",
+        "required": ["id", "documentoId", "tomo", "tipoArchivo", "nombre", "mimeType", "tamano", "md5", "cantidadPaginas"],
+        "properties": {
+          "id": { "type": "integer" },
+          "documentoId": { "type": "integer" },
+          "tomo": { "type": "integer" },
+          "tipoArchivo": { "type": "integer" },
+          "nombre": { "type": "string" },
+          "mimeType": { "type": "string" },
+          "tamano": { "type": "integer" },
+          "md5": { "type": "string" },
+          "cantidadPaginas": { "type": ["integer", "null"] }
+        }
+      },
+      "Representation": {
+        "type": "object",
+        "required": ["tipo", "mimeType", "tamano", "fuenteReutilizada"],
+        "properties": {
+          "tipo": { "type": "string", "enum": ["original", "pdf-searchable", "jsonl", "markdown"] },
+          "mimeType": { "type": "string" },
+          "tamano": { "type": "integer" },
+          "fuenteReutilizada": { "type": "boolean" }
+        }
+      },
+      "RepresentationManifest": {
+        "type": "object",
+        "required": ["trusted", "defaultRepresentation", "representations"],
+        "properties": {
+          "trusted": { "type": "boolean" },
+          "defaultRepresentation": {
+            "type": ["string", "null"],
+            "enum": ["original", "pdf-searchable", null]
+          },
+          "representations": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Representation" }
+          }
+        }
+      },
+      "DocumentFileDetail": {
+        "allOf": [
+          { "$ref": "#/components/schemas/DocumentFile" },
+          {
+            "type": "object",
+            "required": ["representaciones"],
+            "properties": {
+              "representaciones": { "$ref": "#/components/schemas/RepresentationManifest" }
+            }
+          }
+        ]
+      },
+      "ValidationError": {
+        "type": "object",
+        "required": ["message", "errors"],
+        "properties": {
+          "message": { "type": "string" },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

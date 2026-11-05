@@ -1,0 +1,20 @@
+FROM php:8.5-cli-alpine
+
+RUN apk add --no-cache \
+        icu-dev \
+        libzip-dev \
+        oniguruma-dev \
+        postgresql-dev \
+        su-exec \
+    && docker-php-ext-install -j"$(nproc)" \
+        intl \
+        mbstring \
+        pcntl \
+        pdo_pgsql \
+        zip
+
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+WORKDIR /app
+
+EXPOSE 8000

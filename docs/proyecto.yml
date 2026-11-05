@@ -1,0 +1,80 @@
+schema_version: "1.4"
+
+documentation_model:
+  version: "0.6"
+  organization: by_artifact_family
+  preproduction_as_complete_target: true
+
+project:
+  name: normatividad
+  description: >
+    Portal público y futura administración independiente del repositorio documental
+    de Normatividad del Gobierno Regional de Huánuco.
+  kind: software_solution
+  responsible_unit: null
+  technical_owner: null
+  development_mode: internal
+
+governance:
+  profile: generic
+  directive:
+    code: "N°02.S5.DI.SGMTD"
+    version: "1.0"
+
+lifecycle:
+  stage: development_testing
+  gorehco_hito: null
+
+version:
+  current: "0.1.0"
+  production: false
+
+data:
+  persistent_structured_data: true
+  personal_data: true
+
+documentation_context:
+  incorporation_stage: development_testing
+  existing_system: true
+  historical_design_artifacts_available: true
+
+interface:
+  kind: web
+  significant_ui_change: true
+  historical_prototypes_available: true
+  prototype_requirement_status: pending_evaluation
+  prototype_justification: >
+    El portal sustituirá progresivamente capacidades públicas de Munis; la interfaz funcional
+    aún no fue implementada en este repositorio.
+
+licensing:
+  workflow_state: not_started
+  health: not_evaluated
+
+public_software:
+  candidate: false
+  published: false
+  production_since: null
+
+paths:
+  docs_root: docs
+  docs_index: docs/README.md
+  project_sheet: docs/proyecto/ficha-proyecto.md
+  technical_sheet: docs/documentacion-tecnica/ficha-tecnica-solucion.md
+  requirements: docs/documentacion-tecnica/reglas-negocio.md
+  architecture: docs/arquitectura.md
+  data_dictionary: docs/modelo-datos.md
+  security: docs/documentacion-tecnica/seguridad/seguridad.md
+  personal_data: docs/documentacion-tecnica/seguridad/seguridad.md
+  installation: docs/entorno.md
+  operations: docs/procedimientos.md
+  test_results: docs/pruebas-validaciones/verificacion-inicial.md
+  licensing_root: docs/licenciamiento
+  decisions: docs/documentacion-tecnica/decisiones
+  api_contract: contracts/openapi-public.json
+
+external_evidence:
+  ownership_reference: null
+  favorable_hito_report: null
+  production_verification_report: null
+  administrative_notes: []

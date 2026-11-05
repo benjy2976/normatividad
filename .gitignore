@@ -1,0 +1,17 @@
+/.env
+/.idea/
+/.vscode/*
+!/.vscode/settings.json
+!/.vscode/extensions.json
+/.DS_Store
+__pycache__/
+*.py[cod]
+
+# Los proyectos conservan sus propios .gitignore. Estas entradas evitan
+# publicar configuración local aunque alguno cambie en el futuro.
+/backend/.env
+/backend/vendor/
+/frontend/.env
+/frontend/.nuxt/
+/frontend/.output/
+/frontend/node_modules/

@@ -1,0 +1,47 @@
+{
+  "eslint.nodePath": "frontend/node_modules",
+  "eslint.workingDirectories": [
+    {
+      "directory": "frontend"
+    }
+  ],
+  "eslint.useFlatConfig": true,
+  "eslint.format.enable": true,
+  "eslint.validate": ["javascript", "typescript", "vue"],
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
+  "vetur.validation.script": false,
+  "vetur.validation.template": false,
+  "vetur.validation.interpolation": false,
+  "vetur.validation.style": false,
+  "vetur.format.enable": false,
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false
+  }
+}

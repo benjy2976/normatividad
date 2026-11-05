@@ -1,0 +1,83 @@
+name: normatividad
+
+services:
+  proxy:
+    image: nginx:1.29-alpine
+    ports:
+      - "${DEV_HTTP_PORT:-8080}:80"
+    volumes:
+      - ./infrastructure/development/proxy/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - regulations_data:/mnt/regulations:ro
+      - ocr_cache_data:/mnt/ocr-cache:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    command: >-
+      sh -lc "su-exec $${HOST_UID}:$${HOST_GID}
+      composer install --no-interaction --prefer-dist
+      && install -d -o 33 -g 33 /tmp/laravel/views
+      && cd public
+      && exec su-exec 33:33 php -S 0.0.0.0:8000
+      ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php"
+    env_file:
+      - ./backend/.env
+    environment:
+      COMPOSER_HOME: /tmp/composer
+      HOST_UID: "${LOCAL_UID:-1000}"
+      HOST_GID: "${LOCAL_GID:-1000}"
+      HOME: /tmp
+      LOG_CHANNEL: stderr
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      VIEW_COMPILED_PATH: /tmp/laravel/views
+      PUBLIC_API_PREFIX: /resources
+      REGULATIONS_STORAGE_PATH: /mnt/regulations/regulations/regulations
+      OCR_CACHE_STORAGE_PATH: /mnt/ocr-cache
+    volumes:
+      - ./backend:/app
+      - regulations_data:/mnt/regulations:ro
+      - ocr_cache_data:/mnt/ocr-cache:ro
+    expose:
+      - "8000"
+    networks:
+      - default
+      - database
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    command: >-
+      sh -lc "npm install
+      && npm run dev -- --host 0.0.0.0"
+    environment:
+      HOME: /tmp
+      NUXT_PUBLIC_API_BASE: /resources
+    volumes:
+      - ./frontend:/app
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+volumes:
+  regulations_data:
+    external: true
+    name: munis_regulations_nfs_ro
+  ocr_cache_data:
+    external: true
+    name: normatividad_ocr_cache_nfs_ro
+
+networks:
+  database:
+    external: true
+    name: grh_network

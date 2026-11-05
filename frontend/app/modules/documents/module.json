@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "name": "documents",
+  "responsibility": "Búsqueda pública convencional y consulta de metadatos documentales",
+  "context": "context.md"
+}

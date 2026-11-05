@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "name": "viewer",
+  "responsibility": "Visualización pública de un archivo exacto y sus representaciones confiables",
+  "context": "context.md"
+}
