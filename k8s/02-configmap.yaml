@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: normatividad-backend-config
+  namespace: ocr-service
+  labels:
+    app.kubernetes.io/part-of: normatividad-services
+data:
+  APP_NAME: "Normatividad"
+  APP_ENV: "production"
+  APP_DEBUG: "false"
+  APP_URL: "https://normatividad.regionhuanuco.gob.pe"
+  DB_CONNECTION: "pgsql"
+  DB_HOST: "10.0.0.60"
+  DB_PORT: "5432"
+  DB_DATABASE: "proyectos"
+  DB_USERNAME: "postgres"
+  DB_SCHEMA: "normatividad"
+  DB_SSLMODE: "prefer"
+  PUBLIC_API_PREFIX: "/resources"
+  REGULATIONS_STORAGE_PATH: "/mnt/regulations/regulations/regulations"
+  OCR_CACHE_STORAGE_PATH: "/mnt/ocr-cache"
+  LOG_CHANNEL: "stderr"
+  CACHE_STORE: "array"
+  SESSION_DRIVER: "array"
+  VIEW_COMPILED_PATH: "/tmp/laravel/views"
+  PHP_CLI_SERVER_WORKERS: "4"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: normatividad-frontend-config
+  namespace: ocr-service
+  labels:
+    app.kubernetes.io/part-of: normatividad-services
+data:
+  NODE_ENV: "production"
+  HOST: "0.0.0.0"
+  PORT: "3000"
+  NUXT_PUBLIC_API_BASE: "/resources"
+

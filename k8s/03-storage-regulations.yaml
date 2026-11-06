@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: normatividad-regulations-pv
+  labels:
+    type: nfs
+    app.kubernetes.io/part-of: normatividad-services
+spec:
+  capacity:
+    storage: 500Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-regulations
+  mountOptions:
+    - ro
+    - nolock
+    - soft
+  nfs:
+    server: 10.0.0.31
+    path: /mnt/iscsi/regulations
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: normatividad-regulations-pvc
+  namespace: ocr-service
+  labels:
+    app.kubernetes.io/part-of: normatividad-services
+spec:
+  accessModes:
+    - ReadOnlyMany
+  storageClassName: nfs-regulations
+  resources:
+    requests:
+      storage: 500Gi

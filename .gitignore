@@ -15,3 +15,6 @@ __pycache__/
 /frontend/.nuxt/
 /frontend/.output/
 /frontend/node_modules/
+
+# Kubernetes secrets con credenciales reales
+/k8s/01-secret.yaml

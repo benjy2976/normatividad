@@ -1,0 +1,67 @@
+# Ingress para la API pública de Laravel: reescribe /resources/* a /* hacia normatividad-backend
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: normatividad-ingress-backend
+  namespace: ocr-service
+  labels:
+    app.kubernetes.io/part-of: normatividad-services
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - normatividad.regionhuanuco.gob.pe
+      secretName: normatividad-tls
+  rules:
+    - host: normatividad.regionhuanuco.gob.pe
+      http:
+        paths:
+          - path: /resources(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: normatividad-backend
+                port:
+                  number: 8000
+---
+# Ingress para el Portal Público (Nuxt 4 SPA/SSR): sirve la interfaz web en la raíz /
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: normatividad-ingress-frontend
+  namespace: ocr-service
+  labels:
+    app.kubernetes.io/part-of: normatividad-services
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - normatividad.regionhuanuco.gob.pe
+      secretName: normatividad-tls
+  rules:
+    - host: normatividad.regionhuanuco.gob.pe
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: normatividad-frontend
+                port:
+                  number: 3000
